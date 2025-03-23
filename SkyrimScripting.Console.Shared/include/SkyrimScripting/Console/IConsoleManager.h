@@ -7,9 +7,9 @@
 namespace SkyrimScripting::Console {
 
     struct IConsoleManager {
-        virtual bool start()                                                           = 0;
-        virtual void stop()                                                            = 0;
-        virtual bool running() const                                                   = 0;
+        virtual bool enable()                                                          = 0;
+        virtual void disable()                                                         = 0;
+        virtual bool enabled() const                                                   = 0;
         virtual bool run(const char* commandText, RE::TESObjectREFR* target = nullptr) = 0;
         virtual bool run_command(
             const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
