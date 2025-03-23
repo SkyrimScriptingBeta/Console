@@ -1,0 +1,24 @@
+function skse_plugin(mod_info)
+    local commonlib_version = get_config("commonlib"):match("skyrim%-commonlib%-(.*)")
+    local mods_folders = os.getenv("SKYRIM_MODS_FOLDERS")
+
+    if mods_folders then
+        mod_info.mods_folders = mods_folders
+    else
+        print("SKYRIM_MODS_FOLDERS environment variable not set")
+    end
+    
+    target(mod_info.name)
+        set_basename(mod_info.name .. "-" .. commonlib_version:upper())
+        add_files(mod_info.src or "*.cpp")
+        add_packages(get_config("commonlib"))
+        add_rules("@skyrim-commonlib-" .. commonlib_version .. "/plugin", {
+            mod_name     = mod_info.name .. " (" .. commonlib_version:upper() .. ")",
+            mods_folders = mod_info.mods_folders or "",
+            mod_files    = mod_info.mod_files,
+            name         = mod_info.name,
+            version      = mod_info.version,
+            author       = mod_info.author,
+            email        = mod_info.email
+        })
+end
