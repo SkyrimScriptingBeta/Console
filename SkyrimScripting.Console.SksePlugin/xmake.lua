@@ -4,5 +4,6 @@ skse_plugin({
     author = "Mrowr Purr",
     email = "mrowr.purr@gmail.com",
     src = "src/*.cpp",
-    deps = {"SkyrimScripting.Console.Shared"}
+    deps = {"SkyrimScripting.Console.Shared"},
+    packages = {"SkyrimScripting.Plugin"}
 })

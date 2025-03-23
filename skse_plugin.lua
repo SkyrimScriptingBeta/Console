@@ -21,4 +21,10 @@ function skse_plugin(mod_info)
             author       = mod_info.author,
             email        = mod_info.email
         })
+        for _, dep in ipairs(mod_info.deps or {}) do
+            add_deps(dep, { public = true })
+        end
+        for _, package in ipairs(mod_info.packages or {}) do
+            add_packages(package, { public = true })
+        end
 end

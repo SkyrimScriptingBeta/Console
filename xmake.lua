@@ -31,10 +31,11 @@ end
 add_requires(get_config("commonlib"))
 add_requires("global_macro_functions")
 
-includes("SkyrimScripting.Shared/xmake.lua")
+includes("SkyrimScripting.Console.Shared/xmake.lua")
 includes("SkyrimScripting.Console/xmake.lua")
 
 if has_config("build_plugin") then
+    add_requires("SkyrimScripting.Plugin", { configs = { commonlib = get_config("commonlib") } })
     includes("SkyrimScripting.Console.SksePlugin/xmake.lua")
 end
 
