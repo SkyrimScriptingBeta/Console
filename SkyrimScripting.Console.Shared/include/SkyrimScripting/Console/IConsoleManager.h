@@ -69,7 +69,7 @@ namespace SkyrimScripting::Console {
          * If ignoreConsoleOwnership is false and the console is owned, only then owning handler
          * is called.
          */
-        virtual void run(
+        virtual bool run(
             const char* commandText, RE::TESObjectREFR* target = nullptr,
             bool ignoreConsoleOwnership = true
         ) = 0;

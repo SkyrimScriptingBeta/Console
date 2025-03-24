@@ -30,8 +30,6 @@ if has_config("build_plugin") or has_config("build_example") then
     add_repositories("SkyrimScriptingBeta https://github.com/SkyrimScriptingBeta/Packages.git")
     add_repositories("MrowrLib            https://github.com/MrowrLib/Packages.git")
     
-    includes("skse_plugin.lua")
-    
     add_requires("SkyrimScripting.Plugin", { configs = { commonlib = get_config("commonlib") } })
 end
 
@@ -41,6 +39,7 @@ add_requires("function_pointer")
 add_requires("collections")
 add_requires("unordered_dense")
 
+includes("xmake/*.lua")
 includes("SkyrimScripting.Console.Shared/xmake.lua")
 includes("SkyrimScripting.Console/xmake.lua")
 
@@ -52,6 +51,7 @@ if has_config("build_example") then
     skse_plugin({
         name = "_Example of using SkyrimScripting.Console",
         deps = {"SkyrimScripting.Console"},
-        packages = {"SkyrimScripting.Plugin"}
+        packages = {"SkyrimScripting.Plugin"},
+        src = "plugin.cpp"
     })
 end

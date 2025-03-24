@@ -1,17 +1,12 @@
 #include <SkyrimScripting/Plugin.h>
 
-#include <string_view>
-
+#include "ConsoleManager.h"
 #include "Hook.h"
 
+auto consoleManager = std::make_unique<SkyrimScripting::Console::ConsoleManager>();
+
 bool ConsoleCommandHandler(std::string_view commandText, RE::TESObjectREFR* target) {
-    SKSE::log::info("HELLO FROM OVERRIDEN CONSOLE COMMAND!");
-    SKSE::log::info("The Command: {}", commandText);
-
-    // for (auto& callback : CommandRegistration::CommandCallbacks)
-    //     if (callback(commandText)) return true;
-
-    return false;
+    return consoleManager->run(commandText.data(), target);
 }
 
 SKSEPlugin_OnInputLoaded {

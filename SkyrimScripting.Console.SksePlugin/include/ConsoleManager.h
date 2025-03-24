@@ -4,7 +4,7 @@
 #include <collections.h>
 
 namespace SkyrimScripting::Console {
-    class ConsoleManager : IConsoleManager {
+    class ConsoleManager : public IConsoleManager {
         std::atomic<bool>                                      _enabled = false;
         std::vector<ConsoleHandlerFn>                          _ownershipHandlersStack;
         std::vector<ConsoleListenerFn>                         _consoleListeners;
@@ -14,6 +14,8 @@ namespace SkyrimScripting::Console {
         collections_map<std::string, ConsoleCommandListenerFn> _commandListeners;
 
     public:
+        ~ConsoleManager() override = default;
+
         bool               enable() override;
         void               disable() override;
         bool               enabled() const override;
@@ -22,7 +24,7 @@ namespace SkyrimScripting::Console {
         void               log(const char* message) override;
         const char*        last_output() override;
         bool run_native(const char* commandText, RE::TESObjectREFR* target = nullptr) override;
-        void run(
+        bool run(
             const char* commandText, RE::TESObjectREFR* target = nullptr,
             bool ignoreConsoleOwnership = true
         ) override;
@@ -81,8 +83,5 @@ namespace SkyrimScripting::Console {
         bool is_owned() const override;
         bool run_owning_handler(const char* commandText, RE::TESObjectREFR* target = nullptr)
             override;
-
-    protected:
-        ~ConsoleManager() override = default;
     };
 }

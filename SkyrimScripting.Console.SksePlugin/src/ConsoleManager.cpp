@@ -92,7 +92,7 @@ namespace SkyrimScripting::Console {
         return false;
     }
 
-    void ConsoleManager::run(
+    bool ConsoleManager::run(
         const char* commandText, RE::TESObjectREFR* target, bool ignoreConsoleOwnership
     ) {
         if (!target) target = selected_ref();
@@ -102,13 +102,12 @@ namespace SkyrimScripting::Console {
 
         // Check ownership
         if (!ignoreConsoleOwnership && is_owned()) {
-            run_owning_handler(commandText, target);
-            return;
+            return run_owning_handler(commandText, target);
         }
 
         // Run priority console handlers
         for (auto& handler : _priorityConsoleHandlers) {
-            if (handler->invoke(commandText, target)) return;
+            if (handler->invoke(commandText, target)) return true;
         }
 
         // Parse command name
@@ -127,11 +126,13 @@ namespace SkyrimScripting::Console {
         // Run command handlers
         auto cmdHandlerIt = _commandHandlers.find(commandName);
         if (cmdHandlerIt != _commandHandlers.end()) {
-            if (cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target)) return;
+            if (cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target)) return true;
         }
 
         // Run regular console handlers
         run_console_handlers(commandText, target);
+
+        return false;
     }
 
     void ConsoleManager::run_command(
