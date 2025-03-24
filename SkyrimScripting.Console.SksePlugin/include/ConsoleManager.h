@@ -17,16 +17,43 @@ namespace SkyrimScripting::Console {
         void disable() override { _enabled = false; }
         bool enabled() const override { return _enabled; }
 
-        bool run_command(
-            const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
+        void run(
+            const char* commandText, RE::TESObjectREFR* target, bool ignoreConsoleOwnership = true
         ) override {
-            auto it = _commandHandlers.find(commandName);
-            if (it == _commandHandlers.end()) return false;
-            return it->second->invoke(commandName, commandText, target);
+            // 1. Runs all console listeners.
+            run_console_listeners(commandText, target);
+
+            // 2. Runs all priority console handlers. If any returns true, the command is considered
+            // handled.
+            run_console_handlers(commandText);
+
+            // 3. Determines the command name from the first part of the command text.
+            std::string commandName = commandText;
+            size_t      spaceIndex  = commandName.find(' ');
+            if (spaceIndex != std::string::npos) {
+                commandName = commandName.substr(0, spaceIndex);
+            }
+
+            // 4. Runs all command listeners for the command name.
+            run_command_listeners(commandName.c_str(), commandText);
+
+            // 5. Runs all command handlers for the command name. If any returns true, the command
+            // is considered handled.
+            run_command_handlers(commandName.c_str(), commandText);
+
+            // 6. Runs all command listeners for the command name.
+            run_console_handlers(commandText);
         }
 
-        void actual_run_used_by_hook(const char* commandText, RE::TESObjectREFR* target = nullptr) {
-            //
+        void run_command(
+            const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
+        ) override {
+            // 1. Runs all command listeners for the command name.
+            run_command_listeners(commandName, commandText, target);
+
+            // 2. Runs all command handlers for the command name. If any returns true, the command
+            // is considered handled.
+            run_command_handlers(commandName, commandText, target);
         }
     };
 }

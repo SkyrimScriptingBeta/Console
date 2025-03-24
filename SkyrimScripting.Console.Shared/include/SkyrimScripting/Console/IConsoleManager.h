@@ -46,6 +46,8 @@ namespace SkyrimScripting::Console {
          * Run a command natively.
          *
          * Runs the command natively via the Skyrim command without any listeners or handlers.
+         *
+         * Runs even if the console manager is disabled.
          */
         virtual bool run_native(const char* commandText, RE::TESObjectREFR* target = nullptr) = 0;
 
@@ -59,8 +61,18 @@ namespace SkyrimScripting::Console {
          * 5. Runs all command handlers for the command name. If any returns true, the command is
          * considered handled.
          * 6. Runs all console handlers. If any returns true, the command is considered handled.
+         *
+         * Runs even if the console manager is disabled.
+         *
+         * If ignoreConsoleOwnership is true, any claimed ownership is ignored.
+         *
+         * If ignoreConsoleOwnership is false and the console is owned, only then owning handler
+         * is called.
          */
-        virtual bool run(const char* commandText, RE::TESObjectREFR* target = nullptr) = 0;
+        virtual void run(
+            const char* commandText, RE::TESObjectREFR* target = nullptr,
+            bool ignoreConsoleOwnership = true
+        ) = 0;
 
         /**
          * Run a specific command by command name.
@@ -70,8 +82,10 @@ namespace SkyrimScripting::Console {
          * 1. Runs all command listeners for the command name.
          * 2. Runs all command handlers for the command name. If any returns true, the command is
          * considered handled.
+         *
+         * Runs even if the console manager is disabled.
          * */
-        virtual bool run_command(
+        virtual void run_command(
             const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
         ) = 0;
 
@@ -111,6 +125,8 @@ namespace SkyrimScripting::Console {
 
         /**
          * Runs all command handlers for the command name.
+         *
+         * Runs even if the console manager is disabled.
          */
         virtual void run_command_handlers(
             const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
@@ -147,6 +163,8 @@ namespace SkyrimScripting::Console {
          * Runs all command listeners for the command name.
          *
          * Does not run any console handlers.
+         *
+         * Runs even if the console manager is disabled.
          */
         virtual void run_command_listeners(
             const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
@@ -188,8 +206,12 @@ namespace SkyrimScripting::Console {
 
         /**
          * Runs all priority console handlers.
+         *
+         * Runs even if the console manager is disabled.
          */
-        virtual void run_priority_console_handlers(const char* commandText) = 0;
+        virtual void run_priority_console_handlers(
+            const char* commandText, RE::TESObjectREFR* target = nullptr
+        ) = 0;
 
         /**
          * /////////////////////////////////////////////////////////////////////////////
@@ -233,8 +255,12 @@ namespace SkyrimScripting::Console {
          * Runs all console handlers.
          *
          * This does not run priority console handlers.
+         *
+         * Runs even if the console manager is disabled.
          */
-        virtual void run_console_handlers(const char* commandText) = 0;
+        virtual void run_console_handlers(
+            const char* commandText, RE::TESObjectREFR* target = nullptr
+        ) = 0;
 
         /**
          * /////////////////////////////////////////////////////////////////////////////
@@ -261,8 +287,12 @@ namespace SkyrimScripting::Console {
 
         /**
          * Runs all console listeners.
+         *
+         * Runs even if the console manager is disabled.
          */
-        virtual void run_console_listeners(const char* commandText) = 0;
+        virtual void run_console_listeners(
+            const char* commandText, RE::TESObjectREFR* target = nullptr
+        ) = 0;
 
         /**
          * /////////////////////////////////////////////////////////////////////////////
