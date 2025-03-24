@@ -13,16 +13,55 @@ namespace SkyrimScripting::Console {
 
     bool ConsoleManager::enabled() const { return _enabled; }
 
+    /**
+     * `selected_ref`, `select_ref`, and `run_native` functions source come from ConsoleUtilSSE
+     * - https://github.com/VersuchDrei/ConsoleUtilSSE
+     * - License: MIT
+     *
+     * _Provided here on ConsoleManager for convenience_
+     */
     RE::TESObjectREFR* ConsoleManager::selected_ref() {
-        // TODO
-        return nullptr;
+        const auto selectedRef = RE::Console::GetSelectedRef();
+        return selectedRef.get();
     }
 
+    /**
+     * `selected_ref`, `select_ref`, and `run_native` functions source come from ConsoleUtilSSE
+     * - https://github.com/VersuchDrei/ConsoleUtilSSE
+     * - License: MIT
+     *
+     * _Provided here on ConsoleManager for convenience_
+     */
     void ConsoleManager::select_ref(RE::TESObjectREFR* reference) {
-        // TODO
+        if (reference) {
+            const auto factory          = RE::MessageDataFactoryManager::GetSingleton();
+            const auto interfaceStrings = RE::InterfaceStrings::GetSingleton();
+            const auto creator =
+                factory && interfaceStrings
+                    ? factory->GetCreator<RE::ConsoleData>(interfaceStrings->consoleData)
+                    : nullptr;
+
+            const auto consoleData  = creator ? creator->Create() : nullptr;
+            const auto messageQueue = RE::UIMessageQueue::GetSingleton();
+            if (consoleData && messageQueue) {
+                consoleData->type    = static_cast<RE::ConsoleData::DataType>(1);
+                consoleData->pickRef = reference->CreateRefHandle();
+                messageQueue->AddMessage(
+                    interfaceStrings->console, RE::UI_MESSAGE_TYPE::kUpdate, consoleData
+                );
+            }
+        } else {
+            const auto ui      = RE::UI::GetSingleton();
+            const auto console = ui ? ui->GetMenu<RE::Console>() : nullptr;
+            if (console) {
+                const RE::ObjectRefHandle nothing;
+                console->SetSelectedRef(nothing);
+            }
+        }
     }
 
     void ConsoleManager::log(const char* message) {
+        if (!message) return;
         auto console = RE::ConsoleLog::GetSingleton();
         if (console) console->Print(message);
     }
@@ -33,8 +72,23 @@ namespace SkyrimScripting::Console {
         return "";
     }
 
+    /**
+     * `selected_ref`, `select_ref`, and `run_native` functions source come from ConsoleUtilSSE
+     * - https://github.com/VersuchDrei/ConsoleUtilSSE
+     * - License: MIT
+     *
+     * _Provided here on ConsoleManager for convenience_
+     */
     bool ConsoleManager::run_native(const char* commandText, RE::TESObjectREFR* target) {
-        // TODO
+        if (!commandText) return false;
+        const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+        const auto script        = scriptFactory ? scriptFactory->Create() : nullptr;
+        if (script) {
+            script->SetCommand(commandText);
+            script->CompileAndRun(target == nullptr ? selected_ref() : target);
+            delete script;
+            return true;
+        }
         return false;
     }
 
