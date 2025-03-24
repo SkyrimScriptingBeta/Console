@@ -1,36 +1,280 @@
-#include <SKSE/SKSE.h>
-#include <SkyrimScripting/Console/IConsoleCommand.h>
-#include <SkyrimScripting/Console/IConsoleManager.h>
-#include <collections.h>
+#include "ConsoleManager.h"
 
-#include <atomic>
 #include <string>
 
 namespace SkyrimScripting::Console {
 
-    class ConsoleManager : IConsoleManager {
-        std::atomic<bool>                                      _enabled = false;
-        std::vector<ConsoleHandlerFn>                          _ownershipHandlersStack;
-        std::vector<ConsoleListenerFn>                         _consoleListeners;
-        std::vector<ConsoleHandlerFn>                          _consoleHandlers;
-        collections_map<std::string, ConsoleCommandHandlerFn>  _commandHandlers;
-        collections_map<std::string, ConsoleCommandListenerFn> _commandListeners;
+    bool ConsoleManager::enable() {
+        _enabled = true;
+        return true;
+    }
 
-    public:
-        bool enable() override { return !_enabled.exchange(true); }
-        void disable() override { _enabled = false; }
-        bool enabled() const override { return _enabled; }
+    void ConsoleManager::disable() { _enabled = false; }
 
-        bool run_command(
-            const char* commandName, const char* commandText, RE::TESObjectREFR* target = nullptr
-        ) override {
-            auto it = _commandHandlers.find(commandName);
-            if (it == _commandHandlers.end()) return false;
-            return it->second->invoke(commandName, commandText, target);
+    bool ConsoleManager::enabled() const { return _enabled; }
+
+    RE::TESObjectREFR* ConsoleManager::selected_ref() {
+        // TODO
+        return nullptr;
+    }
+
+    void ConsoleManager::select_ref(RE::TESObjectREFR* reference) {
+        // TODO
+    }
+
+    void ConsoleManager::log(const char* message) {
+        auto console = RE::ConsoleLog::GetSingleton();
+        if (console) console->Print(message);
+    }
+
+    const char* ConsoleManager::last_output() {
+        auto console = RE::ConsoleLog::GetSingleton();
+        if (console) return console->lastMessage;
+        return "";
+    }
+
+    bool ConsoleManager::run_native(const char* commandText, RE::TESObjectREFR* target) {
+        // TODO
+        return false;
+    }
+
+    void ConsoleManager::run(
+        const char* commandText, RE::TESObjectREFR* target, bool ignoreConsoleOwnership
+    ) {
+        if (!target) target = selected_ref();
+
+        // Run console listeners first
+        run_console_listeners(commandText, target);
+
+        // Check ownership
+        if (!ignoreConsoleOwnership && is_owned()) {
+            run_owning_handler(commandText, target);
+            return;
         }
 
-        void actual_run_used_by_hook(const char* commandText, RE::TESObjectREFR* target = nullptr) {
-            //
+        // Run priority console handlers
+        for (auto& handler : _priorityConsoleHandlers) {
+            if (handler->invoke(commandText, target)) return;
         }
-    };
+
+        // Parse command name
+        std::string cmdText(commandText);
+        std::string commandName;
+        size_t      spacePos = cmdText.find(' ');
+        if (spacePos != std::string::npos) {
+            commandName = cmdText.substr(0, spacePos);
+        } else {
+            commandName = cmdText;
+        }
+
+        // Run command listeners
+        run_command_listeners(commandName.c_str(), commandText, target);
+
+        // Run command handlers
+        auto cmdHandlerIt = _commandHandlers.find(commandName);
+        if (cmdHandlerIt != _commandHandlers.end()) {
+            if (cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target)) return;
+        }
+
+        // Run regular console handlers
+        run_console_handlers(commandText, target);
+    }
+
+    void ConsoleManager::run_command(
+        const char* commandName, const char* commandText, RE::TESObjectREFR* target
+    ) {
+        if (!target) target = selected_ref();
+
+        // Run command listeners
+        run_command_listeners(commandName, commandText, target);
+
+        // Run command handlers
+        run_command_handlers(commandName, commandText, target);
+    }
+
+    ConsoleCommandHandlerFn ConsoleManager::prepend_command_handler(
+        const char* commandName, ConsoleCommandHandlerFn commandHandler
+    ) {
+        _commandHandlers.insert_or_assign(std::string(commandName), commandHandler);
+        return commandHandler;
+    }
+
+    ConsoleCommandHandlerFn ConsoleManager::add_command_handler(
+        const char* commandName, ConsoleCommandHandlerFn commandHandler
+    ) {
+        _commandHandlers.insert_or_assign(std::string(commandName), commandHandler);
+        return commandHandler;
+    }
+
+    bool ConsoleManager::remove_command_handler(
+        const char* commandName, ConsoleCommandHandlerFn commandHandler
+    ) {
+        auto it = _commandHandlers.find(commandName);
+        if (it != _commandHandlers.end() && it->second == commandHandler) {
+            _commandHandlers.erase(it);
+            return true;
+        }
+        return false;
+    }
+
+    void ConsoleManager::clear_command_handlers(const char* commandName) {
+        _commandHandlers.erase(commandName);
+    }
+
+    void ConsoleManager::run_command_handlers(
+        const char* commandName, const char* commandText, RE::TESObjectREFR* target
+    ) {
+        auto it = _commandHandlers.find(commandName);
+        if (it != _commandHandlers.end()) {
+            it->second->invoke(commandName, commandText, target);
+        }
+    }
+
+    ConsoleCommandListenerFn ConsoleManager::add_command_listener(
+        const char* commandName, ConsoleCommandListenerFn commandListener
+    ) {
+        _commandListeners.insert_or_assign(std::string(commandName), commandListener);
+        return commandListener;
+    }
+
+    ConsoleCommandListenerFn ConsoleManager::remove_command_listener(
+        const char* commandName, ConsoleCommandListenerFn commandListener
+    ) {
+        auto it = _commandListeners.find(commandName);
+        if (it != _commandListeners.end() && it->second == commandListener) {
+            _commandListeners.erase(it);
+            return commandListener;
+        }
+        return nullptr;
+    }
+
+    void ConsoleManager::clear_command_listeners() { _commandListeners.clear(); }
+
+    void ConsoleManager::run_command_listeners(
+        const char* commandName, const char* commandText, RE::TESObjectREFR* target
+    ) {
+        auto it = _commandListeners.find(commandName);
+        if (it != _commandListeners.end()) {
+            it->second->invoke(commandName, commandText, target);
+        }
+    }
+
+    ConsoleHandlerFn ConsoleManager::prepend_priority_console_handler(
+        ConsoleHandlerFn consoleHandler
+    ) {
+        _priorityConsoleHandlers.insert(_priorityConsoleHandlers.begin(), consoleHandler);
+        return consoleHandler;
+    }
+
+    ConsoleHandlerFn ConsoleManager::add_priority_console_handler(ConsoleHandlerFn consoleHandler) {
+        _priorityConsoleHandlers.push_back(consoleHandler);
+        return consoleHandler;
+    }
+
+    ConsoleHandlerFn ConsoleManager::remove_priority_console_handler(ConsoleHandlerFn consoleHandler
+    ) {
+        auto it = std::find(
+            _priorityConsoleHandlers.begin(), _priorityConsoleHandlers.end(), consoleHandler
+        );
+        if (it != _priorityConsoleHandlers.end()) {
+            _priorityConsoleHandlers.erase(it);
+            return consoleHandler;
+        }
+        return nullptr;
+    }
+
+    void ConsoleManager::clear_priority_console_handlers() { _priorityConsoleHandlers.clear(); }
+
+    void ConsoleManager::run_priority_console_handlers(
+        const char* commandText, RE::TESObjectREFR* target
+    ) {
+        for (auto& handler : _priorityConsoleHandlers) {
+            if (handler->invoke(commandText, target)) return;
+        }
+    }
+
+    ConsoleHandlerFn ConsoleManager::prepend_console_handler(ConsoleHandlerFn consoleHandler) {
+        _consoleHandlers.insert(_consoleHandlers.begin(), consoleHandler);
+        return consoleHandler;
+    }
+
+    ConsoleHandlerFn ConsoleManager::add_console_handler(ConsoleHandlerFn consoleHandler) {
+        _consoleHandlers.push_back(consoleHandler);
+        return consoleHandler;
+    }
+
+    ConsoleHandlerFn ConsoleManager::remove_console_handler(ConsoleHandlerFn consoleHandler) {
+        auto it = std::find(_consoleHandlers.begin(), _consoleHandlers.end(), consoleHandler);
+        if (it != _consoleHandlers.end()) {
+            _consoleHandlers.erase(it);
+            return consoleHandler;
+        }
+        return nullptr;
+    }
+
+    void ConsoleManager::clear_console_handlers() { _consoleHandlers.clear(); }
+
+    void ConsoleManager::run_console_handlers(const char* commandText, RE::TESObjectREFR* target) {
+        for (auto& handler : _consoleHandlers) {
+            if (handler->invoke(commandText, target)) return;
+        }
+    }
+
+    ConsoleListenerFn ConsoleManager::add_console_listener(ConsoleListenerFn consoleListener) {
+        _consoleListeners.push_back(consoleListener);
+        return consoleListener;
+    }
+
+    ConsoleListenerFn ConsoleManager::remove_console_listener(ConsoleListenerFn consoleListener) {
+        auto it = std::find(_consoleListeners.begin(), _consoleListeners.end(), consoleListener);
+        if (it != _consoleListeners.end()) {
+            _consoleListeners.erase(it);
+            return consoleListener;
+        }
+        return nullptr;
+    }
+
+    void ConsoleManager::clear_console_listeners() { _consoleListeners.clear(); }
+
+    void ConsoleManager::run_console_listeners(const char* commandText, RE::TESObjectREFR* target) {
+        for (auto& listener : _consoleListeners) {
+            listener->invoke(commandText, target);
+        }
+    }
+
+    bool ConsoleManager::claim_ownership(ConsoleHandlerFn consoleHandler) {
+        _ownershipHandlersStack.push_back(consoleHandler);
+        return true;
+    }
+
+    bool ConsoleManager::release_ownership(ConsoleHandlerFn handler) {
+        if (_ownershipHandlersStack.empty()) return false;
+
+        if (!handler) {
+            // Remove the top handler
+            _ownershipHandlersStack.pop_back();
+            return true;
+        } else {
+            // Find and remove the specific handler
+            auto it =
+                std::find(_ownershipHandlersStack.begin(), _ownershipHandlersStack.end(), handler);
+            if (it != _ownershipHandlersStack.end()) {
+                _ownershipHandlersStack.erase(it);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    void ConsoleManager::clear_ownership_handlers() { _ownershipHandlersStack.clear(); }
+
+    bool ConsoleManager::is_owned() const { return !_ownershipHandlersStack.empty(); }
+
+    bool ConsoleManager::run_owning_handler(const char* commandText, RE::TESObjectREFR* target) {
+        if (_ownershipHandlersStack.empty()) return false;
+
+        // Get the top handler on the stack
+        auto handler = _ownershipHandlersStack.back();
+        return handler->invoke(commandText, target);
+    }
 }

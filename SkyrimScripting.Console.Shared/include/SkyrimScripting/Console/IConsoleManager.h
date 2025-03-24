@@ -331,6 +331,22 @@ namespace SkyrimScripting::Console {
          */
         virtual void clear_ownership_handlers() = 0;
 
+        /**
+         * Check if the console is owned.
+         */
+        virtual bool is_owned() const = 0;
+
+        /**
+         * Runs the owning handler, if any.
+         *
+         * If the console is owned, the owning handler is called with the command text and target.
+         *
+         * Returns the result of the owning handler.
+         */
+        virtual bool run_owning_handler(
+            const char* commandText, RE::TESObjectREFR* target = nullptr
+        ) = 0;
+
     protected:
         /**
          * Destructor.
