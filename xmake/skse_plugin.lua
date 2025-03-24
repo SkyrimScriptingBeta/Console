@@ -20,6 +20,10 @@ function skse_plugin(mod_info)
             author       = mod_info.author,
             email        = mod_info.email
         })
+        add_files(mod_info.src or "src/*.cpp")
+        if mod_info.include then
+            add_includedirs(mod_info.include, { public = true })
+        end
         for _, dep in ipairs(mod_info.deps or {}) do
             add_deps(dep, { public = true })
         end

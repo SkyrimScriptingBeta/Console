@@ -4,7 +4,9 @@ skse_plugin({
     author = "Mrowr Purr",
     email = "mrowr.purr@gmail.com",
     deps = {"SkyrimScripting.Console.Shared"},
-    packages = {"SkyrimScripting.Plugin", "collections", "unordered_dense"}
+    packages = {"SkyrimScripting.Plugin", "collections", "unordered_dense"},
+    src = "src/*.cpp",
+    include = "include"
 })
 if skyrim_version == "ae" then
     add_defines("SKYRIM_VERSION_AE")

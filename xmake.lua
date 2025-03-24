@@ -47,11 +47,12 @@ if has_config("build_plugin") then
     includes("SkyrimScripting.Console.SksePlugin/xmake.lua")
 end
 
-if has_config("build_example") then
-    skse_plugin({
-        name = "_Example of using SkyrimScripting.Console",
-        deps = {"SkyrimScripting.Console"},
-        packages = {"SkyrimScripting.Plugin"},
-        src = "plugin.cpp"
-    })
-end
+-- if has_config("build_example") then
+--     skse_plugin({
+--         name = "_Example of using SkyrimScripting.Console",
+--         deps = {"SkyrimScripting.Console"},
+--         packages = {"SkyrimScripting.Plugin"},
+--         src = "plugin.cpp",
+--         include = nil
+--     })
+-- end

@@ -4,6 +4,11 @@
 
 namespace SkyrimScripting::Console {
 
+    IConsoleManager* ConsoleManager::instance() {
+        static ConsoleManager instance;
+        return &instance;
+    }
+
     bool ConsoleManager::enable() {
         _enabled = true;
         return true;
@@ -333,3 +338,19 @@ namespace SkyrimScripting::Console {
         return handler->invoke(commandText, target);
     }
 }
+
+// #include <SkyrimScripting/Plugin.h>
+
+// #include "ConsoleManager.h"
+// #include "Hook.h"
+
+// auto consoleManager = std::make_unique<SkyrimScripting::Console::ConsoleManager>();
+
+// bool ConsoleCommandHandler(std::string_view commandText, RE::TESObjectREFR* target) {
+//     return consoleManager->run(commandText.data(), target);
+// }
+
+// SKSEPlugin_OnInputLoaded {
+//     Hook::set_command_handler(ConsoleCommandHandler);
+//     Hook::install();
+// }

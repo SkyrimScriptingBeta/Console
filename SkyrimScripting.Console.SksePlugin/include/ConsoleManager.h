@@ -16,6 +16,8 @@ namespace SkyrimScripting::Console {
     public:
         ~ConsoleManager() override = default;
 
+        static IConsoleManager* instance();
+
         bool               enable() override;
         void               disable() override;
         bool               enabled() const override;

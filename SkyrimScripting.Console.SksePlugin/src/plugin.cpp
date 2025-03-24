@@ -3,10 +3,8 @@
 #include "ConsoleManager.h"
 #include "Hook.h"
 
-auto consoleManager = std::make_unique<SkyrimScripting::Console::ConsoleManager>();
-
 bool ConsoleCommandHandler(std::string_view commandText, RE::TESObjectREFR* target) {
-    return consoleManager->run(commandText.data(), target);
+    return SkyrimScripting::Console::ConsoleManager::instance()->run(commandText.data(), target);
 }
 
 SKSEPlugin_OnInputLoaded {
