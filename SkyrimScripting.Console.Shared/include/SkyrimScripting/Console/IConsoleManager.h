@@ -302,6 +302,11 @@ namespace SkyrimScripting::Console {
         virtual void clear_ownership_handlers() = 0;
 
     protected:
+        /**
+         * Destructor.
+         *
+         * Protected to prevent deletion through this interface.
+         */
         virtual ~IConsoleManager() = default;
     };
 }
