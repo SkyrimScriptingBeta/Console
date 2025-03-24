@@ -70,7 +70,7 @@ namespace SkyrimScripting::Console {
         ConsoleHandlerFn add_console_handler(ConsoleHandlerFn consoleHandler) override;
         ConsoleHandlerFn remove_console_handler(ConsoleHandlerFn consoleHandler) override;
         void             clear_console_handlers() override;
-        void run_console_handlers(const char* commandText, RE::TESObjectREFR* target = nullptr)
+        bool run_console_handlers(const char* commandText, RE::TESObjectREFR* target = nullptr)
             override;
 
         ConsoleListenerFn add_console_listener(ConsoleListenerFn consoleListener) override;

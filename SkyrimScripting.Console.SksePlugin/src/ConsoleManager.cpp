@@ -135,7 +135,7 @@ namespace SkyrimScripting::Console {
         }
 
         // Run regular console handlers
-        run_console_handlers(commandText, target);
+        if (run_console_handlers(commandText, target)) return true;
 
         return false;
     }
@@ -274,10 +274,11 @@ namespace SkyrimScripting::Console {
 
     void ConsoleManager::clear_console_handlers() { _consoleHandlers.clear(); }
 
-    void ConsoleManager::run_console_handlers(const char* commandText, RE::TESObjectREFR* target) {
+    bool ConsoleManager::run_console_handlers(const char* commandText, RE::TESObjectREFR* target) {
         for (auto& handler : _consoleHandlers) {
-            if (handler->invoke(commandText, target)) return;
+            if (handler->invoke(commandText, target)) return true;
         }
+        return false;
     }
 
     ConsoleListenerFn ConsoleManager::add_console_listener(ConsoleListenerFn consoleListener) {

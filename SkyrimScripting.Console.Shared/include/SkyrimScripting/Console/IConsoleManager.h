@@ -258,7 +258,7 @@ namespace SkyrimScripting::Console {
          *
          * Runs even if the console manager is disabled.
          */
-        virtual void run_console_handlers(
+        virtual bool run_console_handlers(
             const char* commandText, RE::TESObjectREFR* target = nullptr
         ) = 0;
 
