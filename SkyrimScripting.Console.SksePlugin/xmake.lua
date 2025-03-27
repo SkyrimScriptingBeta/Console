@@ -1,10 +1,11 @@
 skse_plugin({
-    name = "SkyrimScripting.Console.SksePlugin",
+    target = "SkyrimScripting.Console SKSE Plugin",
+    name = "SkyrimScripting.Console",
     version = "0.0.1",
     author = "Mrowr Purr",
     email = "mrowr.purr@gmail.com",
-    deps = {"SkyrimScripting.Console.Shared"},
-    packages = {"SkyrimScripting.Plugin", "collections", "unordered_dense"},
+    deps = {"SkyrimScripting.Console"},
+    packages = {"SkyrimScripting.Plugin", "SkyrimScripting.Services", "collections", "unordered_dense"},
     src = "src/*.cpp",
     include = "include"
 })

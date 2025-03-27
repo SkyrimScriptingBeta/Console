@@ -1,23 +1,23 @@
 #include <SkyrimScripting/Plugin.h>
+#include <SkyrimScripting/Services.h>
 
-#include "ConsoleManager.h"
+#include "ConsoleManagerService.h"
 #include "Hook.h"
 
-auto* consoleManager = SkyrimScripting::Console::ConsoleManager::instance();
+auto* consoleManagerService = SkyrimScripting::Console::ConsoleManagerService::instance();
 
 bool ConsoleCommandHandler(std::string_view commandText, RE::TESObjectREFR* target) {
-    return consoleManager->run(commandText.data(), target);
+    return consoleManagerService->run(commandText.data(), target);
 }
 
-auto testCommandHandler = function_pointer([](const char* commandText, RE::TESObjectREFR* target) {
-    // Does commandText start with "test"?
-    if (strncmp(commandText, "test", 4) != 0) return false;
-    ConsoleLog("Test command detected!");
-    return true;
-});
-
-SKSEPlugin_OnInputLoaded {
-    consoleManager->add_console_handler(&testCommandHandler);
+SKSEPlugin_Entrypoint {
     Hook::set_command_handler(ConsoleCommandHandler);
     Hook::install();
+    SkyrimScripting::Services::Initialize();
+}
+
+SKSEPlugin_OnPostLoad {
+    RegisterService(
+        consoleManagerService, "ConsoleManager", "A service provided by SkyrimScripting.Console."
+    );
 }

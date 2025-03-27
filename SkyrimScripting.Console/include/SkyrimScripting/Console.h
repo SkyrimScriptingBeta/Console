@@ -1,15 +1,15 @@
 #pragma once
 
-#include <SkyrimScripting/Console/IConsoleManager.h>  // IWYU pragma: export
+#include "Console/IConsoleManagerService.h"
 
 namespace SkyrimScripting::Console {
-    class ConsoleManager : public IConsoleManager {
-        IConsoleManager* _consoleManager;
+    class ConsoleManager : public IConsoleManagerService {
+        IConsoleManagerService* _consoleManager;
 
     public:
-        ConsoleManager(IConsoleManager* consoleManager) : _consoleManager(consoleManager) {}
+        ConsoleManager(IConsoleManagerService* consoleManager) : _consoleManager(consoleManager) {}
 
-        static IConsoleManager* instance() {
+        static IConsoleManagerService* instance() {
             // ...implementation...
         }
 

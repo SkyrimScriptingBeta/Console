@@ -8,7 +8,7 @@ function skse_plugin(mod_info)
         print("SKYRIM_MODS_FOLDERS environment variable not set")
     end
     
-    target(mod_info.name)
+    target(mod_info.target or mod_info.name)
         set_basename(mod_info.name .. "-" .. commonlib_version:upper())
         add_packages(get_config("commonlib"))
         add_rules("@skyrim-commonlib-" .. commonlib_version .. "/plugin", {

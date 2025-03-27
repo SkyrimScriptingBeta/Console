@@ -6,7 +6,9 @@
 
 namespace SkyrimScripting::Console {
 
-    struct IConsoleManager {
+    struct IConsoleManagerService {
+        static constexpr auto SERVICE_NAME = "ConsoleManager";
+
         /**
          * Enable the console.
          */
@@ -353,6 +355,6 @@ namespace SkyrimScripting::Console {
          *
          * Protected to prevent deletion through this interface.
          */
-        virtual ~IConsoleManager() = default;
+        virtual ~IConsoleManagerService() = default;
     };
 }

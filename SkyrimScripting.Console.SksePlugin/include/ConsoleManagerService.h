@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SkyrimScripting/Console/IConsoleManager.h>
+#include <SkyrimScripting/Console/IConsoleManagerService.h>
 #include <collections.h>
 
 namespace SkyrimScripting::Console {
-    class ConsoleManager : public IConsoleManager {
+    class ConsoleManagerService : public IConsoleManagerService {
         std::atomic<bool>                                      _enabled = false;
         std::vector<ConsoleHandlerFn>                          _ownershipHandlersStack;
         std::vector<ConsoleListenerFn>                         _consoleListeners;
@@ -14,9 +14,9 @@ namespace SkyrimScripting::Console {
         collections_map<std::string, ConsoleCommandListenerFn> _commandListeners;
 
     public:
-        ~ConsoleManager() override = default;
+        ~ConsoleManagerService() override = default;
 
-        static IConsoleManager* instance();
+        static IConsoleManagerService* instance();
 
         bool               enable() override;
         void               disable() override;

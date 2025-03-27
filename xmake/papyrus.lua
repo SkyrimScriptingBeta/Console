@@ -11,6 +11,6 @@ function compile_papyrus_scripts()
     end)
 end
 
-target("Build Papyrus Scripts")
-    set_kind("phony")
-    compile_papyrus_scripts()
+-- target("Build Papyrus Scripts")
+--     set_kind("phony")
+--     compile_papyrus_scripts()

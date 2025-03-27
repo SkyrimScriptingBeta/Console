@@ -1,22 +1,22 @@
-#include "ConsoleManager.h"
+#include "ConsoleManagerService.h"
 
 #include <string>
 
 namespace SkyrimScripting::Console {
 
-    IConsoleManager* ConsoleManager::instance() {
-        static ConsoleManager instance;
+    IConsoleManagerService* ConsoleManagerService::instance() {
+        static ConsoleManagerService instance;
         return &instance;
     }
 
-    bool ConsoleManager::enable() {
+    bool ConsoleManagerService::enable() {
         _enabled = true;
         return true;
     }
 
-    void ConsoleManager::disable() { _enabled = false; }
+    void ConsoleManagerService::disable() { _enabled = false; }
 
-    bool ConsoleManager::enabled() const { return _enabled; }
+    bool ConsoleManagerService::enabled() const { return _enabled; }
 
     /**
      * `selected_ref`, `select_ref`, and `run_native` functions source come from ConsoleUtilSSE
@@ -25,7 +25,7 @@ namespace SkyrimScripting::Console {
      *
      * _Provided here on ConsoleManager for convenience_
      */
-    RE::TESObjectREFR* ConsoleManager::selected_ref() {
+    RE::TESObjectREFR* ConsoleManagerService::selected_ref() {
         const auto selectedRef = RE::Console::GetSelectedRef();
         return selectedRef.get();
     }
@@ -37,7 +37,7 @@ namespace SkyrimScripting::Console {
      *
      * _Provided here on ConsoleManager for convenience_
      */
-    void ConsoleManager::select_ref(RE::TESObjectREFR* reference) {
+    void ConsoleManagerService::select_ref(RE::TESObjectREFR* reference) {
         if (reference) {
             const auto factory          = RE::MessageDataFactoryManager::GetSingleton();
             const auto interfaceStrings = RE::InterfaceStrings::GetSingleton();
@@ -65,13 +65,13 @@ namespace SkyrimScripting::Console {
         }
     }
 
-    void ConsoleManager::log(const char* message) {
+    void ConsoleManagerService::log(const char* message) {
         if (!message) return;
         auto console = RE::ConsoleLog::GetSingleton();
         if (console) console->Print(message);
     }
 
-    const char* ConsoleManager::last_output() {
+    const char* ConsoleManagerService::last_output() {
         auto console = RE::ConsoleLog::GetSingleton();
         if (console) return console->lastMessage;
         return "";
@@ -84,7 +84,7 @@ namespace SkyrimScripting::Console {
      *
      * _Provided here on ConsoleManager for convenience_
      */
-    bool ConsoleManager::run_native(const char* commandText, RE::TESObjectREFR* target) {
+    bool ConsoleManagerService::run_native(const char* commandText, RE::TESObjectREFR* target) {
         if (!commandText) return false;
         const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
         const auto script        = scriptFactory ? scriptFactory->Create() : nullptr;
@@ -97,7 +97,7 @@ namespace SkyrimScripting::Console {
         return false;
     }
 
-    bool ConsoleManager::run(
+    bool ConsoleManagerService::run(
         const char* commandText, RE::TESObjectREFR* target, bool ignoreConsoleOwnership
     ) {
         if (!target) target = selected_ref();
@@ -140,7 +140,7 @@ namespace SkyrimScripting::Console {
         return false;
     }
 
-    void ConsoleManager::run_command(
+    void ConsoleManagerService::run_command(
         const char* commandName, const char* commandText, RE::TESObjectREFR* target
     ) {
         if (!target) target = selected_ref();
@@ -152,21 +152,21 @@ namespace SkyrimScripting::Console {
         run_command_handlers(commandName, commandText, target);
     }
 
-    ConsoleCommandHandlerFn ConsoleManager::prepend_command_handler(
+    ConsoleCommandHandlerFn ConsoleManagerService::prepend_command_handler(
         const char* commandName, ConsoleCommandHandlerFn commandHandler
     ) {
         _commandHandlers.insert_or_assign(std::string(commandName), commandHandler);
         return commandHandler;
     }
 
-    ConsoleCommandHandlerFn ConsoleManager::add_command_handler(
+    ConsoleCommandHandlerFn ConsoleManagerService::add_command_handler(
         const char* commandName, ConsoleCommandHandlerFn commandHandler
     ) {
         _commandHandlers.insert_or_assign(std::string(commandName), commandHandler);
         return commandHandler;
     }
 
-    bool ConsoleManager::remove_command_handler(
+    bool ConsoleManagerService::remove_command_handler(
         const char* commandName, ConsoleCommandHandlerFn commandHandler
     ) {
         auto it = _commandHandlers.find(commandName);
@@ -177,11 +177,11 @@ namespace SkyrimScripting::Console {
         return false;
     }
 
-    void ConsoleManager::clear_command_handlers(const char* commandName) {
+    void ConsoleManagerService::clear_command_handlers(const char* commandName) {
         _commandHandlers.erase(commandName);
     }
 
-    void ConsoleManager::run_command_handlers(
+    void ConsoleManagerService::run_command_handlers(
         const char* commandName, const char* commandText, RE::TESObjectREFR* target
     ) {
         auto it = _commandHandlers.find(commandName);
@@ -190,14 +190,14 @@ namespace SkyrimScripting::Console {
         }
     }
 
-    ConsoleCommandListenerFn ConsoleManager::add_command_listener(
+    ConsoleCommandListenerFn ConsoleManagerService::add_command_listener(
         const char* commandName, ConsoleCommandListenerFn commandListener
     ) {
         _commandListeners.insert_or_assign(std::string(commandName), commandListener);
         return commandListener;
     }
 
-    ConsoleCommandListenerFn ConsoleManager::remove_command_listener(
+    ConsoleCommandListenerFn ConsoleManagerService::remove_command_listener(
         const char* commandName, ConsoleCommandListenerFn commandListener
     ) {
         auto it = _commandListeners.find(commandName);
@@ -208,9 +208,9 @@ namespace SkyrimScripting::Console {
         return nullptr;
     }
 
-    void ConsoleManager::clear_command_listeners() { _commandListeners.clear(); }
+    void ConsoleManagerService::clear_command_listeners() { _commandListeners.clear(); }
 
-    void ConsoleManager::run_command_listeners(
+    void ConsoleManagerService::run_command_listeners(
         const char* commandName, const char* commandText, RE::TESObjectREFR* target
     ) {
         auto it = _commandListeners.find(commandName);
@@ -219,19 +219,22 @@ namespace SkyrimScripting::Console {
         }
     }
 
-    ConsoleHandlerFn ConsoleManager::prepend_priority_console_handler(
+    ConsoleHandlerFn ConsoleManagerService::prepend_priority_console_handler(
         ConsoleHandlerFn consoleHandler
     ) {
         _priorityConsoleHandlers.insert(_priorityConsoleHandlers.begin(), consoleHandler);
         return consoleHandler;
     }
 
-    ConsoleHandlerFn ConsoleManager::add_priority_console_handler(ConsoleHandlerFn consoleHandler) {
+    ConsoleHandlerFn ConsoleManagerService::add_priority_console_handler(
+        ConsoleHandlerFn consoleHandler
+    ) {
         _priorityConsoleHandlers.push_back(consoleHandler);
         return consoleHandler;
     }
 
-    ConsoleHandlerFn ConsoleManager::remove_priority_console_handler(ConsoleHandlerFn consoleHandler
+    ConsoleHandlerFn ConsoleManagerService::remove_priority_console_handler(
+        ConsoleHandlerFn consoleHandler
     ) {
         auto it = std::find(
             _priorityConsoleHandlers.begin(), _priorityConsoleHandlers.end(), consoleHandler
@@ -243,9 +246,11 @@ namespace SkyrimScripting::Console {
         return nullptr;
     }
 
-    void ConsoleManager::clear_priority_console_handlers() { _priorityConsoleHandlers.clear(); }
+    void ConsoleManagerService::clear_priority_console_handlers() {
+        _priorityConsoleHandlers.clear();
+    }
 
-    void ConsoleManager::run_priority_console_handlers(
+    void ConsoleManagerService::run_priority_console_handlers(
         const char* commandText, RE::TESObjectREFR* target
     ) {
         for (auto& handler : _priorityConsoleHandlers) {
@@ -253,17 +258,19 @@ namespace SkyrimScripting::Console {
         }
     }
 
-    ConsoleHandlerFn ConsoleManager::prepend_console_handler(ConsoleHandlerFn consoleHandler) {
+    ConsoleHandlerFn ConsoleManagerService::prepend_console_handler(ConsoleHandlerFn consoleHandler
+    ) {
         _consoleHandlers.insert(_consoleHandlers.begin(), consoleHandler);
         return consoleHandler;
     }
 
-    ConsoleHandlerFn ConsoleManager::add_console_handler(ConsoleHandlerFn consoleHandler) {
+    ConsoleHandlerFn ConsoleManagerService::add_console_handler(ConsoleHandlerFn consoleHandler) {
         _consoleHandlers.push_back(consoleHandler);
         return consoleHandler;
     }
 
-    ConsoleHandlerFn ConsoleManager::remove_console_handler(ConsoleHandlerFn consoleHandler) {
+    ConsoleHandlerFn ConsoleManagerService::remove_console_handler(ConsoleHandlerFn consoleHandler
+    ) {
         auto it = std::find(_consoleHandlers.begin(), _consoleHandlers.end(), consoleHandler);
         if (it != _consoleHandlers.end()) {
             _consoleHandlers.erase(it);
@@ -272,21 +279,26 @@ namespace SkyrimScripting::Console {
         return nullptr;
     }
 
-    void ConsoleManager::clear_console_handlers() { _consoleHandlers.clear(); }
+    void ConsoleManagerService::clear_console_handlers() { _consoleHandlers.clear(); }
 
-    bool ConsoleManager::run_console_handlers(const char* commandText, RE::TESObjectREFR* target) {
+    bool ConsoleManagerService::run_console_handlers(
+        const char* commandText, RE::TESObjectREFR* target
+    ) {
         for (auto& handler : _consoleHandlers) {
             if (handler->invoke(commandText, target)) return true;
         }
         return false;
     }
 
-    ConsoleListenerFn ConsoleManager::add_console_listener(ConsoleListenerFn consoleListener) {
+    ConsoleListenerFn ConsoleManagerService::add_console_listener(ConsoleListenerFn consoleListener
+    ) {
         _consoleListeners.push_back(consoleListener);
         return consoleListener;
     }
 
-    ConsoleListenerFn ConsoleManager::remove_console_listener(ConsoleListenerFn consoleListener) {
+    ConsoleListenerFn ConsoleManagerService::remove_console_listener(
+        ConsoleListenerFn consoleListener
+    ) {
         auto it = std::find(_consoleListeners.begin(), _consoleListeners.end(), consoleListener);
         if (it != _consoleListeners.end()) {
             _consoleListeners.erase(it);
@@ -295,20 +307,22 @@ namespace SkyrimScripting::Console {
         return nullptr;
     }
 
-    void ConsoleManager::clear_console_listeners() { _consoleListeners.clear(); }
+    void ConsoleManagerService::clear_console_listeners() { _consoleListeners.clear(); }
 
-    void ConsoleManager::run_console_listeners(const char* commandText, RE::TESObjectREFR* target) {
+    void ConsoleManagerService::run_console_listeners(
+        const char* commandText, RE::TESObjectREFR* target
+    ) {
         for (auto& listener : _consoleListeners) {
             listener->invoke(commandText, target);
         }
     }
 
-    bool ConsoleManager::claim_ownership(ConsoleHandlerFn consoleHandler) {
+    bool ConsoleManagerService::claim_ownership(ConsoleHandlerFn consoleHandler) {
         _ownershipHandlersStack.push_back(consoleHandler);
         return true;
     }
 
-    bool ConsoleManager::release_ownership(ConsoleHandlerFn handler) {
+    bool ConsoleManagerService::release_ownership(ConsoleHandlerFn handler) {
         if (_ownershipHandlersStack.empty()) return false;
 
         if (!handler) {
@@ -327,11 +341,13 @@ namespace SkyrimScripting::Console {
         }
     }
 
-    void ConsoleManager::clear_ownership_handlers() { _ownershipHandlersStack.clear(); }
+    void ConsoleManagerService::clear_ownership_handlers() { _ownershipHandlersStack.clear(); }
 
-    bool ConsoleManager::is_owned() const { return !_ownershipHandlersStack.empty(); }
+    bool ConsoleManagerService::is_owned() const { return !_ownershipHandlersStack.empty(); }
 
-    bool ConsoleManager::run_owning_handler(const char* commandText, RE::TESObjectREFR* target) {
+    bool ConsoleManagerService::run_owning_handler(
+        const char* commandText, RE::TESObjectREFR* target
+    ) {
         if (_ownershipHandlersStack.empty()) return false;
 
         // Get the top handler on the stack
