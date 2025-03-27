@@ -165,7 +165,9 @@ namespace SkyrimScripting::Console {
         if (cmdHandlerIt != _commandHandlers.end()) {
             bool handled = cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target);
             if (handled) {
-                SKSE::log::info("run(): Command handler handled the command.");
+                SKSE::log::info(
+                    "run(): Command handler for '{}' handled the command.", commandName
+                );
                 return true;
             }
         }
@@ -256,7 +258,10 @@ namespace SkyrimScripting::Console {
         if (it != _commandHandlers.end()) {
             bool handled = it->second->invoke(commandName, commandText, target);
             if (handled) {
-                SKSE::log::info("run_command_handlers(): Command handler handled the command.");
+                SKSE::log::info(
+                    "run_command_handlers(): Command handler for '{}' handled the command.",
+                    commandName
+                );
             }
         }
     }
