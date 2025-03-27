@@ -161,9 +161,10 @@ namespace SkyrimScripting::Console {
         run_command_listeners(commandName.c_str(), commandText, target);
 
         // Run command handlers
+        bool handled      = false;
         auto cmdHandlerIt = _commandHandlers.find(commandName);
         if (cmdHandlerIt != _commandHandlers.end()) {
-            bool handled = cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target);
+            handled = cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target);
             if (handled) {
                 SKSE::log::info(
                     "run(): Command handler for '{}' handled the command.", commandName
@@ -173,7 +174,7 @@ namespace SkyrimScripting::Console {
         }
 
         // Run regular console handlers
-        bool handled = run_console_handlers(commandText, target);
+        handled = run_console_handlers(commandText, target);
         if (handled) {
             SKSE::log::info("run(): Regular console handler handled the command.");
             return true;
