@@ -31,7 +31,6 @@ if has_config("build_plugin") or has_config("build_example") then
     add_repositories("MrowrLib            https://github.com/MrowrLib/Packages.git")
     
     add_requires("SkyrimScripting.Plugin", { configs = { commonlib = get_config("commonlib") } })
-    add_requires("SkyrimScripting.Services", { configs = { commonlib = get_config("commonlib") } })
 end
 
 add_requires(get_config("commonlib"))
@@ -39,6 +38,7 @@ add_requires("global_macro_functions")
 add_requires("function_pointer")
 add_requires("collections")
 add_requires("unordered_dense")
+add_requires("SkyrimScripting.Services", { configs = { commonlib = get_config("commonlib") } })
 
 includes("xmake/*.lua")
 includes("SkyrimScripting.Console/xmake.lua")
