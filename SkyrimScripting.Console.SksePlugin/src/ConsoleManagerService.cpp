@@ -8,23 +8,23 @@ namespace SkyrimScripting::Console {
 
     IConsoleManagerService* ConsoleManagerService::instance() {
         static ConsoleManagerService instance;
-        SKSE::log::trace("ConsoleManagerService::instance() called");
+        SKSE::log::trace("instance() called");
         return &instance;
     }
 
     bool ConsoleManagerService::enable() {
-        SKSE::log::info("ConsoleManagerService::enable() called");
+        SKSE::log::info("enable() called");
         _enabled = true;
         return true;
     }
 
     void ConsoleManagerService::disable() {
-        SKSE::log::info("ConsoleManagerService::disable() called");
+        SKSE::log::info("disable() called");
         _enabled = false;
     }
 
     bool ConsoleManagerService::enabled() const {
-        SKSE::log::trace("ConsoleManagerService::enabled() called");
+        SKSE::log::trace("enabled() called");
         return _enabled;
     }
 
@@ -36,7 +36,7 @@ namespace SkyrimScripting::Console {
      * _Provided here on ConsoleManager for convenience_
      */
     RE::TESObjectREFR* ConsoleManagerService::selected_ref() {
-        SKSE::log::debug("ConsoleManagerService::selected_ref() called");
+        SKSE::log::debug("selected_ref() called");
         const auto selectedRef = RE::Console::GetSelectedRef();
         return selectedRef.get();
     }
@@ -49,10 +49,7 @@ namespace SkyrimScripting::Console {
      * _Provided here on ConsoleManager for convenience_
      */
     void ConsoleManagerService::select_ref(RE::TESObjectREFR* reference) {
-        SKSE::log::info(
-            "ConsoleManagerService::select_ref() called with reference: {}",
-            reference ? "valid" : "nullptr"
-        );
+        SKSE::log::info("select_ref() called with reference: {}", reference ? "valid" : "nullptr");
         if (reference) {
             const auto factory          = RE::MessageDataFactoryManager::GetSingleton();
             const auto interfaceStrings = RE::InterfaceStrings::GetSingleton();
@@ -81,16 +78,14 @@ namespace SkyrimScripting::Console {
     }
 
     void ConsoleManagerService::log(const char* message) {
-        SKSE::log::debug(
-            "ConsoleManagerService::log() called with message: {}", message ? message : "nullptr"
-        );
+        SKSE::log::debug("log() called with message: {}", message ? message : "nullptr");
         if (!message) return;
         auto console = RE::ConsoleLog::GetSingleton();
         if (console) console->Print(message);
     }
 
     const char* ConsoleManagerService::last_output() {
-        SKSE::log::trace("ConsoleManagerService::last_output() called");
+        SKSE::log::trace("last_output() called");
         auto console = RE::ConsoleLog::GetSingleton();
         if (console) return console->lastMessage;
         return "";
@@ -105,7 +100,7 @@ namespace SkyrimScripting::Console {
      */
     bool ConsoleManagerService::run_native(const char* commandText, RE::TESObjectREFR* target) {
         SKSE::log::info(
-            "ConsoleManagerService::run_native() called with commandText: {} and target: {}",
+            "run_native() called with commandText: {} and target: {}",
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
         if (!commandText) return false;
@@ -124,7 +119,7 @@ namespace SkyrimScripting::Console {
         const char* commandText, RE::TESObjectREFR* target, bool ignoreConsoleOwnership
     ) {
         SKSE::log::info(
-            "ConsoleManagerService::run() called with commandText: {}, target: {}, "
+            "run() called with commandText: {}, target: {}, "
             "ignoreConsoleOwnership: {}",
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr",
             ignoreConsoleOwnership
@@ -173,7 +168,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_command() called with commandName: {}, commandText: {}, "
+            "run_command() called with commandName: {}, commandText: {}, "
             "target: {}",
             commandName ? commandName : "nullptr", commandText ? commandText : "nullptr",
             target ? "valid" : "nullptr"
@@ -191,7 +186,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, ConsoleCommandHandlerFn commandHandler
     ) {
         SKSE::log::info(
-            "ConsoleManagerService::prepend_command_handler() called with commandName: {}",
+            "prepend_command_handler() called with commandName: {}",
             commandName ? commandName : "nullptr"
         );
         _commandHandlers.insert_or_assign(std::string(commandName), commandHandler);
@@ -202,7 +197,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, ConsoleCommandHandlerFn commandHandler
     ) {
         SKSE::log::info(
-            "ConsoleManagerService::add_command_handler() called with commandName: {}",
+            "add_command_handler() called with commandName: {}",
             commandName ? commandName : "nullptr"
         );
         _commandHandlers.insert_or_assign(std::string(commandName), commandHandler);
@@ -213,7 +208,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, ConsoleCommandHandlerFn commandHandler
     ) {
         SKSE::log::warn(
-            "ConsoleManagerService::remove_command_handler() called with commandName: {}",
+            "remove_command_handler() called with commandName: {}",
             commandName ? commandName : "nullptr"
         );
         auto it = _commandHandlers.find(commandName);
@@ -226,7 +221,7 @@ namespace SkyrimScripting::Console {
 
     void ConsoleManagerService::clear_command_handlers(const char* commandName) {
         SKSE::log::warn(
-            "ConsoleManagerService::clear_command_handlers() called with commandName: {}",
+            "clear_command_handlers() called with commandName: {}",
             commandName ? commandName : "nullptr"
         );
         _commandHandlers.erase(commandName);
@@ -236,7 +231,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_command_handlers() called with commandName: {}, "
+            "run_command_handlers() called with commandName: {}, "
             "commandText: {}, target: {}",
             commandName ? commandName : "nullptr", commandText ? commandText : "nullptr",
             target ? "valid" : "nullptr"
@@ -251,7 +246,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, ConsoleCommandListenerFn commandListener
     ) {
         SKSE::log::info(
-            "ConsoleManagerService::add_command_listener() called with commandName: {}",
+            "add_command_listener() called with commandName: {}",
             commandName ? commandName : "nullptr"
         );
         _commandListeners.insert_or_assign(std::string(commandName), commandListener);
@@ -262,7 +257,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, ConsoleCommandListenerFn commandListener
     ) {
         SKSE::log::warn(
-            "ConsoleManagerService::remove_command_listener() called with commandName: {}",
+            "remove_command_listener() called with commandName: {}",
             commandName ? commandName : "nullptr"
         );
         auto it = _commandListeners.find(commandName);
@@ -274,7 +269,7 @@ namespace SkyrimScripting::Console {
     }
 
     void ConsoleManagerService::clear_command_listeners() {
-        SKSE::log::warn("ConsoleManagerService::clear_command_listeners() called");
+        SKSE::log::warn("clear_command_listeners() called");
         _commandListeners.clear();
     }
 
@@ -282,7 +277,7 @@ namespace SkyrimScripting::Console {
         const char* commandName, const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_command_listeners() called with commandName: {}, "
+            "run_command_listeners() called with commandName: {}, "
             "commandText: {}, target: {}",
             commandName ? commandName : "nullptr", commandText ? commandText : "nullptr",
             target ? "valid" : "nullptr"
@@ -296,7 +291,7 @@ namespace SkyrimScripting::Console {
     ConsoleHandlerFn ConsoleManagerService::prepend_priority_console_handler(
         ConsoleHandlerFn consoleHandler
     ) {
-        SKSE::log::info("ConsoleManagerService::prepend_priority_console_handler() called");
+        SKSE::log::info("prepend_priority_console_handler() called");
         _priorityConsoleHandlers.insert(_priorityConsoleHandlers.begin(), consoleHandler);
         return consoleHandler;
     }
@@ -304,7 +299,7 @@ namespace SkyrimScripting::Console {
     ConsoleHandlerFn ConsoleManagerService::add_priority_console_handler(
         ConsoleHandlerFn consoleHandler
     ) {
-        SKSE::log::info("ConsoleManagerService::add_priority_console_handler() called");
+        SKSE::log::info("add_priority_console_handler() called");
         _priorityConsoleHandlers.push_back(consoleHandler);
         return consoleHandler;
     }
@@ -312,7 +307,7 @@ namespace SkyrimScripting::Console {
     ConsoleHandlerFn ConsoleManagerService::remove_priority_console_handler(
         ConsoleHandlerFn consoleHandler
     ) {
-        SKSE::log::warn("ConsoleManagerService::remove_priority_console_handler() called");
+        SKSE::log::warn("remove_priority_console_handler() called");
         auto it = std::find(
             _priorityConsoleHandlers.begin(), _priorityConsoleHandlers.end(), consoleHandler
         );
@@ -324,7 +319,7 @@ namespace SkyrimScripting::Console {
     }
 
     void ConsoleManagerService::clear_priority_console_handlers() {
-        SKSE::log::warn("ConsoleManagerService::clear_priority_console_handlers() called");
+        SKSE::log::warn("clear_priority_console_handlers() called");
         _priorityConsoleHandlers.clear();
     }
 
@@ -332,7 +327,7 @@ namespace SkyrimScripting::Console {
         const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_priority_console_handlers() called with commandText: {}, "
+            "run_priority_console_handlers() called with commandText: {}, "
             "target: {}",
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
@@ -343,20 +338,20 @@ namespace SkyrimScripting::Console {
 
     ConsoleHandlerFn ConsoleManagerService::prepend_console_handler(ConsoleHandlerFn consoleHandler
     ) {
-        SKSE::log::info("ConsoleManagerService::prepend_console_handler() called");
+        SKSE::log::info("prepend_console_handler() called");
         _consoleHandlers.insert(_consoleHandlers.begin(), consoleHandler);
         return consoleHandler;
     }
 
     ConsoleHandlerFn ConsoleManagerService::add_console_handler(ConsoleHandlerFn consoleHandler) {
-        SKSE::log::info("ConsoleManagerService::add_console_handler() called");
+        SKSE::log::info("add_console_handler() called");
         _consoleHandlers.push_back(consoleHandler);
         return consoleHandler;
     }
 
     ConsoleHandlerFn ConsoleManagerService::remove_console_handler(ConsoleHandlerFn consoleHandler
     ) {
-        SKSE::log::warn("ConsoleManagerService::remove_console_handler() called");
+        SKSE::log::warn("remove_console_handler() called");
         auto it = std::find(_consoleHandlers.begin(), _consoleHandlers.end(), consoleHandler);
         if (it != _consoleHandlers.end()) {
             _consoleHandlers.erase(it);
@@ -366,7 +361,7 @@ namespace SkyrimScripting::Console {
     }
 
     void ConsoleManagerService::clear_console_handlers() {
-        SKSE::log::warn("ConsoleManagerService::clear_console_handlers() called");
+        SKSE::log::warn("clear_console_handlers() called");
         _consoleHandlers.clear();
     }
 
@@ -374,7 +369,7 @@ namespace SkyrimScripting::Console {
         const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_console_handlers() called with commandText: {}, target: {}",
+            "run_console_handlers() called with commandText: {}, target: {}",
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
         for (auto& handler : _consoleHandlers) {
@@ -385,7 +380,7 @@ namespace SkyrimScripting::Console {
 
     ConsoleListenerFn ConsoleManagerService::add_console_listener(ConsoleListenerFn consoleListener
     ) {
-        SKSE::log::info("ConsoleManagerService::add_console_listener() called");
+        SKSE::log::info("add_console_listener() called");
         _consoleListeners.push_back(consoleListener);
         return consoleListener;
     }
@@ -393,7 +388,7 @@ namespace SkyrimScripting::Console {
     ConsoleListenerFn ConsoleManagerService::remove_console_listener(
         ConsoleListenerFn consoleListener
     ) {
-        SKSE::log::warn("ConsoleManagerService::remove_console_listener() called");
+        SKSE::log::warn("remove_console_listener() called");
         auto it = std::find(_consoleListeners.begin(), _consoleListeners.end(), consoleListener);
         if (it != _consoleListeners.end()) {
             _consoleListeners.erase(it);
@@ -403,7 +398,7 @@ namespace SkyrimScripting::Console {
     }
 
     void ConsoleManagerService::clear_console_listeners() {
-        SKSE::log::warn("ConsoleManagerService::clear_console_listeners() called");
+        SKSE::log::warn("clear_console_listeners() called");
         _consoleListeners.clear();
     }
 
@@ -411,7 +406,7 @@ namespace SkyrimScripting::Console {
         const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_console_listeners() called with commandText: {}, target: "
+            "run_console_listeners() called with commandText: {}, target: "
             "{}",
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
@@ -421,13 +416,13 @@ namespace SkyrimScripting::Console {
     }
 
     bool ConsoleManagerService::claim_ownership(ConsoleHandlerFn consoleHandler) {
-        SKSE::log::info("ConsoleManagerService::claim_ownership() called");
+        SKSE::log::info("claim_ownership() called");
         _ownershipHandlersStack.push_back(consoleHandler);
         return true;
     }
 
     bool ConsoleManagerService::release_ownership(ConsoleHandlerFn handler) {
-        SKSE::log::warn("ConsoleManagerService::release_ownership() called");
+        SKSE::log::warn("release_ownership() called");
         if (_ownershipHandlersStack.empty()) return false;
 
         if (!handler) {
@@ -447,12 +442,12 @@ namespace SkyrimScripting::Console {
     }
 
     void ConsoleManagerService::clear_ownership_handlers() {
-        SKSE::log::warn("ConsoleManagerService::clear_ownership_handlers() called");
+        SKSE::log::warn("clear_ownership_handlers() called");
         _ownershipHandlersStack.clear();
     }
 
     bool ConsoleManagerService::is_owned() const {
-        SKSE::log::trace("ConsoleManagerService::is_owned() called");
+        SKSE::log::trace("is_owned() called");
         return !_ownershipHandlersStack.empty();
     }
 
@@ -460,7 +455,7 @@ namespace SkyrimScripting::Console {
         const char* commandText, RE::TESObjectREFR* target
     ) {
         SKSE::log::debug(
-            "ConsoleManagerService::run_owning_handler() called with commandText: {}, target: {}",
+            "run_owning_handler() called with commandText: {}, target: {}",
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
         if (_ownershipHandlersStack.empty()) return false;
