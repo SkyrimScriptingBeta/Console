@@ -131,12 +131,20 @@ namespace SkyrimScripting::Console {
 
         // Check ownership
         if (!ignoreConsoleOwnership && is_owned()) {
-            return run_owning_handler(commandText, target);
+            bool handled = run_owning_handler(commandText, target);
+            if (handled) {
+                SKSE::log::info("run(): Owning handler handled the command.");
+                return true;
+            }
         }
 
         // Run priority console handlers
         for (auto& handler : _priorityConsoleHandlers) {
-            if (handler->invoke(commandText, target)) return true;
+            bool handled = handler->invoke(commandText, target);
+            if (handled) {
+                SKSE::log::info("run(): Priority console handler handled the command.");
+                return true;
+            }
         }
 
         // Parse command name
@@ -155,11 +163,19 @@ namespace SkyrimScripting::Console {
         // Run command handlers
         auto cmdHandlerIt = _commandHandlers.find(commandName);
         if (cmdHandlerIt != _commandHandlers.end()) {
-            if (cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target)) return true;
+            bool handled = cmdHandlerIt->second->invoke(commandName.c_str(), commandText, target);
+            if (handled) {
+                SKSE::log::info("run(): Command handler handled the command.");
+                return true;
+            }
         }
 
         // Run regular console handlers
-        if (run_console_handlers(commandText, target)) return true;
+        bool handled = run_console_handlers(commandText, target);
+        if (handled) {
+            SKSE::log::info("run(): Regular console handler handled the command.");
+            return true;
+        }
 
         return false;
     }
@@ -238,7 +254,10 @@ namespace SkyrimScripting::Console {
         );
         auto it = _commandHandlers.find(commandName);
         if (it != _commandHandlers.end()) {
-            it->second->invoke(commandName, commandText, target);
+            bool handled = it->second->invoke(commandName, commandText, target);
+            if (handled) {
+                SKSE::log::info("run_command_handlers(): Command handler handled the command.");
+            }
         }
     }
 
@@ -332,7 +351,13 @@ namespace SkyrimScripting::Console {
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
         for (auto& handler : _priorityConsoleHandlers) {
-            if (handler->invoke(commandText, target)) return;
+            bool handled = handler->invoke(commandText, target);
+            if (handled) {
+                SKSE::log::info(
+                    "run_priority_console_handlers(): Priority console handler handled the command."
+                );
+                return;
+            }
         }
     }
 
@@ -373,7 +398,11 @@ namespace SkyrimScripting::Console {
             commandText ? commandText : "nullptr", target ? "valid" : "nullptr"
         );
         for (auto& handler : _consoleHandlers) {
-            if (handler->invoke(commandText, target)) return true;
+            bool handled = handler->invoke(commandText, target);
+            if (handled) {
+                SKSE::log::info("run_console_handlers(): Console handler handled the command.");
+                return true;
+            }
         }
         return false;
     }
@@ -462,7 +491,11 @@ namespace SkyrimScripting::Console {
 
         // Get the top handler on the stack
         auto handler = _ownershipHandlersStack.back();
-        return handler->invoke(commandText, target);
+        bool handled = handler->invoke(commandText, target);
+        if (handled) {
+            SKSE::log::info("run_owning_handler(): Owning handler handled the command.");
+        }
+        return handled;
     }
 }
 
